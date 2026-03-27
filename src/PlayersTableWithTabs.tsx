@@ -28,6 +28,7 @@ import {
 import AddPlayerDialog from "./AddPlayerDialog";
 import EditPlayerDialog from "./EditPlayerDialog";
 import ResetTeamsButton from "./ResetTeamsButton";
+import { useTheme } from "@mui/material/styles";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,6 +47,7 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 export default function PlayersTableWithTabs() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [tabIndex, setTabIndex] = useState(0);
+  const theme = useTheme();
 
   // 🔥 Firestore en temps réel trié par nom
   useEffect(() => {
@@ -115,6 +117,15 @@ export default function PlayersTableWithTabs() {
     "Joueurs assignés à l'Équipe 4.",
   ];
 
+  const backgroundColorByStatus = (
+    injured: Player["injured"],
+    present: Player["present"],
+  ) => {
+    if (injured) return theme.palette.error.light;
+    if (!present) return theme.palette.action.disabledBackground;
+    return theme.palette.background.paper;
+  };
+
   return (
     <Paper style={{ maxWidth: 900, margin: "20px auto" }}>
       <Typography variant="h4" align="center" gutterBottom>
@@ -147,7 +158,7 @@ export default function PlayersTableWithTabs() {
             {tabDescriptions[i]}
           </Typography>
           <TableContainer>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell>Nom</TableCell>
@@ -159,7 +170,15 @@ export default function PlayersTableWithTabs() {
               </TableHead>
               <TableBody>
                 {filterPlayers(i).map((player) => (
-                  <TableRow key={player.id}>
+                  <TableRow
+                    key={player.id}
+                    sx={{
+                      backgroundColor: backgroundColorByStatus(
+                        player.injured,
+                        player.present,
+                      ),
+                    }}
+                  >
                     <TableCell>{player.name}</TableCell>
                     <TableCell align="center">
                       <Switch
@@ -183,6 +202,7 @@ export default function PlayersTableWithTabs() {
                         onChange={(e) =>
                           updatePlayer(player, "team", e.target.value as number)
                         }
+                        size="small"
                       >
                         <MenuItem value={0}>En attente</MenuItem>
                         <MenuItem value={1}>Équipe 1</MenuItem>
