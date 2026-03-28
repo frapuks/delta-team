@@ -8,7 +8,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Player } from "./types";
+import type { Player, Teams } from "./types";
 import {
   Table,
   TableBody,
@@ -24,6 +24,7 @@ import {
   Tabs,
   Tab,
   Box,
+  FormControlLabel,
 } from "@mui/material";
 import AddPlayerDialog from "./AddPlayerDialog";
 import EditPlayerDialog from "./EditPlayerDialog";
@@ -45,14 +46,19 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 export default function PlayersTableWithTabs() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [tabIndex, setTabIndex] = useState(0);
   const theme = useTheme();
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [teams, setTeams] = useState<Teams[]>([]);
+  const [tabIndex, setTabIndex] = useState(0);
 
   // 🔥 Firestore en temps réel trié par nom
   useEffect(() => {
-    const q = query(collection(db, "players"), orderBy("name"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const playersQuery = query(
+      collection(db, "players"),
+      orderBy("group"),
+      orderBy("name"),
+    );
+    const unsubscribePlayers = onSnapshot(playersQuery, (snapshot) => {
       const data: Player[] = snapshot.docs.map(
         (doc) =>
           ({
@@ -62,7 +68,21 @@ export default function PlayersTableWithTabs() {
       );
       setPlayers(data);
     });
-    return () => unsubscribe();
+    const teamsQuery = query(collection(db, "teams"), orderBy("number"));
+    const unsubscribeTeams = onSnapshot(teamsQuery, (snapshot) => {
+      const data: Teams[] = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as Teams,
+      );
+      setTeams(data);
+    });
+    return () => {
+      unsubscribePlayers();
+      unsubscribeTeams();
+    };
   }, []);
 
   const updatePlayer = async (
@@ -73,6 +93,14 @@ export default function PlayersTableWithTabs() {
     const playerRef = doc(db, "players", player.id);
     await updateDoc(playerRef, { [field]: value });
   };
+
+  const updateTeamLock = async (team: Teams, isLocked: boolean) => {
+    const teamRef = doc(db, "teams", team.id);
+    await updateDoc(teamRef, { isLocked });
+  };
+
+  const isTeamLocked = (teamNumber: number) =>
+    teams.find((team) => team.number === teamNumber)?.isLocked ?? false;
 
   // 🔹 Filtrage selon tab
   const filterPlayers = (index: number): Player[] => {
@@ -108,7 +136,7 @@ export default function PlayersTableWithTabs() {
   ];
   const tabCounts = tabLabels.map((_, i) => filterPlayers(i).length);
   const tabDescriptions = [
-    "Tous les joueurs sans filtre.",
+    "Tous les joueurs sans filtre, ordonnés par groupe puis par ordre alphabétique",
     "Joueurs disponibles : non blessés et présents.",
     "Joueurs disponibles (non blessés, présents) mais sans équipe assignée.",
     "Joueurs assignés à l'Équipe 1.",
@@ -137,6 +165,29 @@ export default function PlayersTableWithTabs() {
         <AddPlayerDialog />
       </Box>
 
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        flexWrap="wrap"
+        px={2}
+        pb={1}
+        gap={2}
+      >
+        {teams.map((team) => (
+          <FormControlLabel
+            key={team.id}
+            control={
+              <Switch
+                checked={team.isLocked}
+                onChange={(e) => updateTeamLock(team, e.target.checked)}
+              />
+            }
+            label={`${team.name} verrouillee`}
+          />
+        ))}
+      </Box>
+
       <Tabs
         value={tabIndex}
         onChange={(_, newValue) => setTabIndex(newValue)}
@@ -161,10 +212,13 @@ export default function PlayersTableWithTabs() {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Nom</TableCell>
-                  <TableCell align="center">Blessé</TableCell>
-                  <TableCell align="center">Présent</TableCell>
+                  <TableCell align="center" sx={{ width: "5%" }}>
+                    Groupe
+                  </TableCell>
+                  <TableCell align="center">Nom</TableCell>
                   <TableCell align="center">Équipe</TableCell>
+                  <TableCell align="center">Présent</TableCell>
+                  <TableCell align="center">Blessé</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -179,14 +233,30 @@ export default function PlayersTableWithTabs() {
                       ),
                     }}
                   >
-                    <TableCell>{player.name}</TableCell>
+                    <TableCell align="center">{player.group}</TableCell>
+                    <TableCell align="center">{player.name}</TableCell>
                     <TableCell align="center">
-                      <Switch
-                        checked={player.injured}
-                        onChange={() =>
-                          updatePlayer(player, "injured", !player.injured)
+                      <Select
+                        value={player.team}
+                        disabled={
+                          player.team !== 0 && isTeamLocked(player.team)
                         }
-                      />
+                        onChange={(e) =>
+                          updatePlayer(player, "team", e.target.value as number)
+                        }
+                        size="small"
+                      >
+                        <MenuItem value={0}>En attente</MenuItem>
+                        {teams.map((team) => (
+                          <MenuItem
+                            key={team.id}
+                            value={team.number}
+                            disabled={team.isLocked}
+                          >
+                            {team.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
                     </TableCell>
                     <TableCell align="center">
                       <Switch
@@ -197,19 +267,12 @@ export default function PlayersTableWithTabs() {
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <Select
-                        value={player.team}
-                        onChange={(e) =>
-                          updatePlayer(player, "team", e.target.value as number)
+                      <Switch
+                        checked={player.injured}
+                        onChange={() =>
+                          updatePlayer(player, "injured", !player.injured)
                         }
-                        size="small"
-                      >
-                        <MenuItem value={0}>En attente</MenuItem>
-                        <MenuItem value={1}>Équipe 1</MenuItem>
-                        <MenuItem value={2}>Équipe 2</MenuItem>
-                        <MenuItem value={3}>Équipe 3</MenuItem>
-                        <MenuItem value={4}>Équipe 4</MenuItem>
-                      </Select>
+                      />
                     </TableCell>
                     <TableCell align="center">
                       <EditPlayerDialog player={player} />
