@@ -14,11 +14,19 @@ export default function ResetTeamsButton() {
   const [open, setOpen] = useState(false);
 
   const handleReset = async () => {
-    const snapshot = await getDocs(collection(db, "players"));
+    // Réinitialiser les équipes des joueurs
+    const playersSnapshot = await getDocs(collection(db, "players"));
     const batch = writeBatch(db);
-    snapshot.docs.forEach((player) => {
+    playersSnapshot.docs.forEach((player) => {
       batch.update(doc(db, "players", player.id), { team: 0 });
     });
+
+    // Déverrouiller toutes les équipes
+    const teamsSnapshot = await getDocs(collection(db, "teams"));
+    teamsSnapshot.docs.forEach((team) => {
+      batch.update(doc(db, "teams", team.id), { isLocked: false });
+    });
+
     await batch.commit();
     setOpen(false);
   };

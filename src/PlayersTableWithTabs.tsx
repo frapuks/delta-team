@@ -29,7 +29,7 @@ import {
 import AddPlayerDialog from "./AddPlayerDialog";
 import EditPlayerDialog from "./EditPlayerDialog";
 import ResetTeamsButton from "./ResetTeamsButton";
-import { useTheme } from "@mui/material/styles";
+import { red, grey, lime } from "@mui/material/colors";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,7 +46,6 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 export default function PlayersTableWithTabs() {
-  const theme = useTheme();
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Teams[]>([]);
   const [tabIndex, setTabIndex] = useState(0);
@@ -149,9 +148,9 @@ export default function PlayersTableWithTabs() {
     injured: Player["injured"],
     present: Player["present"],
   ) => {
-    if (injured) return theme.palette.error.light;
-    if (!present) return theme.palette.action.disabledBackground;
-    return theme.palette.background.paper;
+    if (injured) return red[200];
+    if (!present) return grey[300];
+    return lime[50];
   };
 
   return (
@@ -160,7 +159,7 @@ export default function PlayersTableWithTabs() {
         Liste des joueurs
       </Typography>
 
-      <Box display="flex" justifyContent="flex-end" padding={2} gap={1}>
+      <Box display="flex" justifyContent="center" padding={2} gap={1}>
         <ResetTeamsButton />
         <AddPlayerDialog />
       </Box>
@@ -219,7 +218,9 @@ export default function PlayersTableWithTabs() {
                   <TableCell align="center">Équipe</TableCell>
                   <TableCell align="center">Présent</TableCell>
                   <TableCell align="center">Blessé</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell align="center" sx={{ width: "5%" }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -245,8 +246,11 @@ export default function PlayersTableWithTabs() {
                           updatePlayer(player, "team", e.target.value as number)
                         }
                         size="small"
+                        variant="standard"
                       >
-                        <MenuItem value={0}>En attente</MenuItem>
+                        <MenuItem value={0}>
+                          En attente
+                        </MenuItem>
                         {teams.map((team) => (
                           <MenuItem
                             key={team.id}
@@ -264,6 +268,7 @@ export default function PlayersTableWithTabs() {
                         onChange={() =>
                           updatePlayer(player, "present", !player.present)
                         }
+                        size="small"
                       />
                     </TableCell>
                     <TableCell align="center">
@@ -272,6 +277,7 @@ export default function PlayersTableWithTabs() {
                         onChange={() =>
                           updatePlayer(player, "injured", !player.injured)
                         }
+                        size="small"
                       />
                     </TableCell>
                     <TableCell align="center">
