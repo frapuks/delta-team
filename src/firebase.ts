@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAjY7c1SykLyKo4PxCRHCSofikUvSBaqEs",
-  authDomain: "delta-team-fdfb7.firebaseapp.com",
-  projectId: "delta-team-fdfb7",
-  storageBucket: "delta-team-fdfb7.firebasestorage.app",
-  messagingSenderId: "453744895990",
-  appId: "1:453744895990:web:092139ea329d9a7dcd89d7",
-  measurementId: "G-2XR9G0GPMF",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
