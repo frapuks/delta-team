@@ -1,5 +1,6 @@
 import {
   Table,
+  Checkbox,
   TableBody,
   TableCell,
   TableContainer,
@@ -9,7 +10,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { red, grey, lime } from "@mui/material/colors";
+import { red, grey } from "@mui/material/colors";
 import EditPlayerDialog from "./EditPlayerDialog";
 import type { Player, Teams } from "./types";
 import { updatePlayer, resetPlayerPresence, resetPlayerTeam } from "./utils";
@@ -24,9 +25,9 @@ const PlayersTable = ({ players, teams }: PlayersTableProps) => {
     injured: Player["injured"],
     present: Player["present"],
   ) => {
-    if (injured) return red[200];
-    if (!present) return grey[300];
-    return lime[50];
+    if (injured) return red[400];
+    if (!present) return grey[200];
+    return "white";
   };
 
   const isTeamLocked = (teamNumber: Teams["number"]) =>
@@ -94,9 +95,10 @@ const PlayersTable = ({ players, teams }: PlayersTableProps) => {
                 />
               </TableCell>
               <TableCell align="center">
-                <Switch
+                <Checkbox
                   checked={player.injured}
                   size="small"
+                  color="default"
                   onChange={() => {
                     updatePlayer(player.id, "injured", !player.injured);
                     resetPlayerTeam(player);

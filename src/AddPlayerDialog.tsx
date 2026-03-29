@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { Add } from "@mui/icons-material";
+import { PersonAdd } from "@mui/icons-material";
 
 const AddPlayerDialog = () => {
   const [open, setOpen] = useState(false);
@@ -42,7 +42,7 @@ const AddPlayerDialog = () => {
       <Button
         variant="contained"
         onClick={() => setOpen(true)}
-        startIcon={<Add />}
+        startIcon={<PersonAdd />}
       >
         Ajouter un joueur
       </Button>

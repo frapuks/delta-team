@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Player, Teams } from "./types";
-import { Typography, Tabs, Tab, Box } from "@mui/material";
+import { Typography, Tabs, Tab, Box, Divider } from "@mui/material";
 import CopyPlayersButton from "./CopyPlayersButton";
 import PlayersTable from "./PlayersTable";
 
@@ -122,6 +122,7 @@ const PlayersTabs = () => {
                   </Typography>
                   <CopyPlayersButton players={tabPlayers} />
                 </Box>
+                <Divider />
                 <PlayersTable players={tabPlayers} teams={teams} />
               </>
             )}
