@@ -23,7 +23,7 @@ interface Props {
   player: Player;
 }
 
-export default function EditPlayerDialog({ player }: Props) {
+const EditPlayerDialog = ({ player }: Props) => {
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [name, setName] = useState(player.name);
@@ -124,3 +124,5 @@ export default function EditPlayerDialog({ player }: Props) {
     </>
   );
 }
+
+export default EditPlayerDialog;

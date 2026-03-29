@@ -13,8 +13,9 @@ import {
 } from "@mui/material";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { Add } from "@mui/icons-material";
 
-export default function AddPlayerDialog() {
+const AddPlayerDialog = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [group, setGroup] = useState(1);
@@ -38,8 +39,12 @@ export default function AddPlayerDialog() {
 
   return (
     <>
-      <Button variant="contained" onClick={() => setOpen(true)}>
-        + Ajouter un joueur
+      <Button
+        variant="contained"
+        onClick={() => setOpen(true)}
+        startIcon={<Add />}
+      >
+        Ajouter un joueur
       </Button>
 
       <Dialog open={open} onClose={() => setOpen(false)}>
@@ -83,3 +88,5 @@ export default function AddPlayerDialog() {
     </>
   );
 }
+
+export default AddPlayerDialog;

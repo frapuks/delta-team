@@ -9,8 +9,9 @@ import {
 } from "@mui/material";
 import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
 import { db } from "./firebase";
+import { WarningAmber } from "@mui/icons-material";
 
-export default function ResetTeamsButton() {
+const ResetTeamsButton = () => {
   const [open, setOpen] = useState(false);
 
   const handleReset = async () => {
@@ -18,7 +19,7 @@ export default function ResetTeamsButton() {
     const playersSnapshot = await getDocs(collection(db, "players"));
     const batch = writeBatch(db);
     playersSnapshot.docs.forEach((player) => {
-      batch.update(doc(db, "players", player.id), { team: 0 });
+      batch.update(doc(db, "players", player.id), { team: 0, present: false });
     });
 
     // Déverrouiller toutes les équipes
@@ -33,7 +34,12 @@ export default function ResetTeamsButton() {
 
   return (
     <>
-      <Button variant="outlined" color="warning" onClick={() => setOpen(true)}>
+      <Button
+        variant="outlined"
+        color="warning"
+        onClick={() => setOpen(true)}
+        startIcon={<WarningAmber />}
+      >
         Réinitialiser les équipes
       </Button>
 
@@ -41,13 +47,18 @@ export default function ResetTeamsButton() {
         <DialogTitle>Réinitialiser les équipes ?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Tous les joueurs seront remis en attente. Cette action est
-            irréversible.
+            Tous les joueurs seront remis absents et en attente, et les équipes
+            seront déverrouillées. Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Annuler</Button>
-          <Button onClick={handleReset} variant="contained" color="warning">
+          <Button
+            onClick={handleReset}
+            variant="contained"
+            color="warning"
+            startIcon={<WarningAmber />}
+          >
             Réinitialiser
           </Button>
         </DialogActions>
@@ -55,3 +66,5 @@ export default function ResetTeamsButton() {
     </>
   );
 }
+
+export default ResetTeamsButton;
